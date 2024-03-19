@@ -1,35 +1,75 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import { Spinner } from "./components/ui/loaders/Spinner.jsx";
+import { MenuItems } from "./components/ui/nav/MenuItems.jsx";
 
-function App() {
-  const [count, setCount] = useState(0)
+/**
+ * App Component
+ * This function is the main component of the application.
+ * It fetches data from a server and displays it in a navigation bar.
+ * It uses the useState hook to manage the data, loading, and error states.
+ * It uses the useEffect hook to fetch the data when the component mounts.
+ * If the data is loading, it displays a Spinner component.
+ * If there is an error, it displays the error message.
+ * If the data has loaded successfully, it displays the data in MenuItems components.
+ * @returns {JSX.Element} The rendered App component
+ */
+const App = () => {
+  /**
+   * @type {Array} data - The data fetched from the server
+   * @type {boolean} loading - The loading state of the data fetch
+   * @type {Error} error - Any error that occurred during the data fetch
+   */
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  /**
+   * useEffect hook
+   * This hook is used to fetch the data when the component mounts.
+   * It sets the loading state to true, then tries to fetch the data.
+   * If the fetch is successful, it sets the data state with the fetched data.
+   * If the fetch fails, it sets the error state with the error.
+   * Finally, it sets the loading state to false.
+   */
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const response = await fetch("http://localhost:3000/projects");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setData(data);
+      } catch (error) {
+        setError(error);
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  /**
+   * Render
+   * This is the render method of the App component.
+   * It returns a JSX element that contains a navigation bar.
+   * If the data is loading, it displays a Spinner component.
+   * If there is an error, it displays the error message.
+   * If the data has loaded successfully, it displays the data in MenuItems components.
+   * @returns {JSX.Element} The rendered App component
+   */
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <nav className={"bg-[#4e70a0] h-12 flex items-center justify-center"}>
+        {loading && <Spinner />}
+        {!loading && error && (
+          <p className={"text-white"}>Error: {error.message}</p>
+        )}
+        {!loading && !error && data && <MenuItems data={data} />}
+      </nav>
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;

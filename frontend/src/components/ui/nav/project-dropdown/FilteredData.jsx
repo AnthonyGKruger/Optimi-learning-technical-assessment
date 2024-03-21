@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { ProjectImage } from "./ProjectImage.jsx";
 
 /**
  * FilteredData component is responsible for rendering the filtered data based on the search query.
@@ -16,46 +17,135 @@ export const FilteredData = ({ data, searchQuery }) => {
   });
 
   // Create a nested array of refs for each group in each item
-  const linksRef = data.map((item) => item.groups.map(() => useRef(null)));
-
+  const linksRef = data.map((item) => [
+    useRef(null),
+    ...item.groups.map(() => useRef(null)),
+  ]);
   // Effect for setting the initial highlighted item and group
   useEffect(() => {
     setHighlightedIndices({ item: data.length > 0 ? 0 : -1, group: 0 });
   }, [data]);
 
   // Handler for keydown events
+  // const handleKeyDown = (event) => {
+  //   if (event.key === "ArrowDown") {
+  //     setHighlightedIndices((prevIndices) => {
+  //       let nextGroup = prevIndices.group;
+  //       let nextItem = prevIndices.item;
+  //       do {
+  //         if (nextGroup === 0 && prevIndices.group === 0) {
+  //           nextGroup = 1;
+  //         } else {
+  //           nextGroup++;
+  //           if (nextGroup > data[nextItem].groups.length) {
+  //             nextGroup = 0;
+  //             nextItem++;
+  //             if (nextItem >= data.length) {
+  //               nextItem = 0; // Loop back to the first item if it's the last one
+  //             }
+  //           }
+  //         }
+  //       } while (!linksRef[nextItem][nextGroup]?.current); // Skip over non-visible groups
+  //       return {
+  //         item: nextItem,
+  //         group: nextGroup,
+  //       };
+  //     });
+  //   } else if (event.key === "ArrowUp") {
+  //     setHighlightedIndices((prevIndices) => {
+  //       let nextGroup = prevIndices.group;
+  //       let nextItem = prevIndices.item;
+  //       do {
+  //         if (nextGroup === 0 && prevIndices.group === 0) {
+  //           nextItem--;
+  //           if (nextItem < 0) {
+  //             nextItem = data.length - 1; // Loop back to the last item if it's the first one
+  //           }
+  //           nextGroup = data[nextItem].groups.length;
+  //         } else {
+  //           nextGroup--;
+  //         }
+  //       } while (!linksRef[nextItem][nextGroup]?.current); // Skip over non-visible groups
+  //       return {
+  //         item: nextItem,
+  //         group: nextGroup,
+  //       };
+  //     });
+  //   } else if (event.key === "Enter") {
+  //     if (
+  //       highlightedIndices.item < linksRef.length &&
+  //       highlightedIndices.group < linksRef[highlightedIndices.item].length
+  //     ) {
+  //       const activeLink =
+  //         linksRef[highlightedIndices.item][highlightedIndices.group].current;
+  //       if (activeLink) {
+  //         activeLink.click();
+  //       }
+  //     }
+  //   }
+  // };
+
   const handleKeyDown = (event) => {
     if (event.key === "ArrowDown") {
-      // If the down arrow key is pressed, move the highlight to the next group or item
       setHighlightedIndices((prevIndices) => {
-        const nextGroup = prevIndices.group + 1;
-        const nextItem =
-          prevIndices.item +
-          (nextGroup >= data[prevIndices.item].groups.length ? 1 : 0);
+        let nextGroup = prevIndices.group;
+        let nextItem = prevIndices.item;
+        do {
+          if (nextGroup === 0 && prevIndices.group === 0) {
+            nextGroup = 1;
+          } else {
+            nextGroup++;
+            if (nextGroup > data[nextItem].groups.length) {
+              nextGroup = 0;
+              nextItem++;
+              if (nextItem >= data.length) {
+                nextItem = 0; // Loop back to the first item if it's the last one
+              }
+            }
+          }
+        } while (!linksRef[nextItem][nextGroup]?.current); // Skip over non-visible groups
         return {
-          item: nextItem < data.length ? nextItem : prevIndices.item,
-          group:
-            nextGroup < data[prevIndices.item].groups.length ? nextGroup : 0,
+          item: nextItem,
+          group: nextGroup,
         };
       });
     } else if (event.key === "ArrowUp") {
-      // If the up arrow key is pressed, move the highlight to the previous group or item
       setHighlightedIndices((prevIndices) => {
-        const nextGroup = prevIndices.group - 1;
-        const nextItem = prevIndices.item - (nextGroup < 0 ? 1 : 0);
+        let nextGroup = prevIndices.group;
+        let nextItem = prevIndices.item;
+        do {
+          if (nextGroup === 0 && prevIndices.group === 0) {
+            nextItem--;
+            if (nextItem < 0) {
+              nextItem = data.length - 1; // Loop back to the last item if it's the first one
+            }
+            nextGroup = data[nextItem].groups.length;
+          } else {
+            nextGroup--;
+            if (nextGroup < 0) {
+              nextItem--;
+              if (nextItem < 0) {
+                nextItem = data.length - 1; // Loop back to the last item if it's the first one
+              }
+              nextGroup = data[nextItem].groups.length;
+            }
+          }
+        } while (!linksRef[nextItem][nextGroup]?.current); // Skip over non-visible groups
         return {
-          item: nextItem >= 0 ? nextItem : prevIndices.item,
-          group:
-            nextGroup >= 0
-              ? nextGroup
-              : data[prevIndices.item].groups.length - 1,
+          item: nextItem,
+          group: nextGroup,
         };
       });
     } else if (event.key === "Enter") {
-      // If the enter key is pressed, click the active link
-      const activeLink = linksRef.current[highlightedIndices.group];
-      if (activeLink) {
-        activeLink.click();
+      if (
+        highlightedIndices.item < linksRef.length &&
+        highlightedIndices.group < linksRef[highlightedIndices.item].length
+      ) {
+        const activeLink =
+          linksRef[highlightedIndices.item][highlightedIndices.group].current;
+        if (activeLink) {
+          activeLink.click();
+        }
       }
     }
   };
@@ -71,6 +161,7 @@ export const FilteredData = ({ data, searchQuery }) => {
   // Effect for focusing the active link
   useEffect(() => {
     let activeLink;
+    // Check if the ref exists before trying to access it
     if (
       highlightedIndices.item < linksRef.length &&
       highlightedIndices.group < linksRef[highlightedIndices.item].length
@@ -93,7 +184,7 @@ export const FilteredData = ({ data, searchQuery }) => {
               <a
                 href={item.url}
                 target={"_blank"}
-                ref={(el) => (linksRef[itemIndex][itemIndex].current = el)}
+                ref={(el) => (linksRef[itemIndex][0].current = el)}
                 tabIndex={0} // Make the item name focusable
                 onKeyDown={handleKeyDown} // Add the keydown event handler
                 className={
@@ -119,8 +210,9 @@ export const FilteredData = ({ data, searchQuery }) => {
                 <a
                   href={item.url}
                   target={"_blank"}
-                  ref={(el) => (linksRef[itemIndex][itemIndex].current = el)}
-                  tabIndex={0}
+                  ref={(el) => (linksRef[itemIndex][0].current = el)}
+                  tabIndex={0} // Make the item name focusable
+                  onKeyDown={handleKeyDown} // Add the keydown event handler
                   className={
                     "focus:bg-blue-300/50 focus:outline-none focus:text-stone-900"
                   }
@@ -137,13 +229,7 @@ export const FilteredData = ({ data, searchQuery }) => {
         return (
           <div key={item.id} className={`grid grid-cols-3 `}>
             <div className={"col-span-1 border"}>
-              <img
-                src={item.image.link}
-                alt={item.name}
-                width={32}
-                height={32}
-                className={"aspect-square mt-1 mx-auto"}
-              />
+              <ProjectImage src={item.image.link} alt={item.name} />
             </div>
             <div className={"col-span-2 border p-2"}>
               <ol className={"list-inside"}>
@@ -165,7 +251,7 @@ export const FilteredData = ({ data, searchQuery }) => {
                         href={group.url}
                         target={"_blank"}
                         ref={(el) =>
-                          (linksRef[itemIndex][groupIndex].current = el)
+                          (linksRef[itemIndex][groupIndex + 1].current = el)
                         }
                         tabIndex={0}
                         className={

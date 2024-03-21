@@ -1,4 +1,4 @@
-import { SearchIcon } from "../icons/SearchIcon.jsx";
+import { SearchIcon } from "../../icons/SearchIcon.jsx";
 import { useState } from "react";
 
 export const SearchBar = ({ onSearch }) => {

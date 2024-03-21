@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ProjectsDropDown } from "./ProjectsDropDown.jsx";
+import { ProjectsDropDown } from "./project-dropdown/ProjectsDropDown.jsx";
 
 /**
  * MenuItems component.

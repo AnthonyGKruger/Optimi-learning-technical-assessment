@@ -1,18 +1,48 @@
 import { useState, useEffect } from "react";
 import { ProjectImage } from "./ProjectImage.jsx";
 
+/**
+ * `FilteredData` is a React component that displays a list of data filtered by a search query.
+ * It also handles keyboard navigation for the list items.
+ *
+ * @component
+ * @param {Object} props - The properties passed to the component.
+ * @param {Array} props.data - The data to be displayed.
+ * @param {string} props.searchQuery - The search query to filter the data.
+ *
+ * @example
+ * <FilteredData data={data} searchQuery="query" />
+ *
+ * @returns {React.Element} The rendered component.
+ */
 export const FilteredData = ({ data, searchQuery }) => {
+  /**
+   * @type {Object} highlightedIndices - The indices of the highlighted item and group.
+   * @property {number} item - The index of the highlighted item.
+   * @property {number} group - The index of the highlighted group.
+   */
   const [highlightedIndices, setHighlightedIndices] = useState({
     item: 0,
     group: 0,
   });
 
+  /**
+   * @type {Object|null} focusedElement - The currently focused element.
+   */
   const [focusedElement, setFocusedElement] = useState(null);
 
+  /**
+   * Sets the initial highlighted indices when the data changes.
+   */
   useEffect(() => {
     setHighlightedIndices({ item: data.length > 0 ? 0 : -1, group: 0 });
   }, [data]);
 
+  /**
+   * Handles the keydown event.
+   *
+   * @param {Object} event - The event object.
+   */
   const handleKeyDown = (event) => {
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       setHighlightedIndices((prevIndices) => {
@@ -57,6 +87,9 @@ export const FilteredData = ({ data, searchQuery }) => {
     }
   };
 
+  /**
+   * Adds and removes the keydown event listener.
+   */
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => {
@@ -64,6 +97,9 @@ export const FilteredData = ({ data, searchQuery }) => {
     };
   }, [data, highlightedIndices]);
 
+  /**
+   * Render the FilteredData component
+   */
   return (
     <>
       {data.map((item, itemIndex) => {
@@ -90,7 +126,6 @@ export const FilteredData = ({ data, searchQuery }) => {
         const lowerCaseQuery = searchQuery.toLowerCase();
         const startIndex = lowerCaseName.indexOf(lowerCaseQuery);
         if (startIndex >= 0) {
-          // Changed condition to >= 0
           const endIndex = startIndex + searchQuery.length;
           const beforeMatch = item.name.slice(0, startIndex);
           const match = item.name.slice(startIndex, endIndex);
@@ -101,8 +136,8 @@ export const FilteredData = ({ data, searchQuery }) => {
                 <a
                   href={item.url}
                   target={"_blank"}
-                  tabIndex={0} // Make the item name focusable
-                  onKeyDown={handleKeyDown} // Add the keydown event handler
+                  tabIndex={0}
+                  onKeyDown={handleKeyDown}
                   className={
                     focusedElement && focusedElement.id === item.id
                       ? "bg-blue-300/50 outline-none text-stone-900"

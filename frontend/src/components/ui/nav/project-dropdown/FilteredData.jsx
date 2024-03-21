@@ -20,7 +20,7 @@ export const FilteredData = ({ data, searchQuery }) => {
         let nextItem = prevIndices.item;
 
         if (event.key === "ArrowDown") {
-          if (nextGroup < data[nextItem].groups.length - 1) {
+          if (nextGroup < data[nextItem].groups.length) {
             nextGroup++;
           } else {
             nextGroup = 0;
@@ -31,7 +31,7 @@ export const FilteredData = ({ data, searchQuery }) => {
             nextGroup--;
           } else {
             nextItem = nextItem > 0 ? nextItem - 1 : data.length - 1;
-            nextGroup = data[nextItem].groups.length - 1;
+            nextGroup = data[nextItem].groups.length;
           }
         }
 

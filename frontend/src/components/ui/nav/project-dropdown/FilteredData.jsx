@@ -1,156 +1,62 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { ProjectImage } from "./ProjectImage.jsx";
 
-/**
- * FilteredData component is responsible for rendering the filtered data based on the search query.
- * It also handles keyboard navigation through the data items and their groups.
- *
- * @param {Object} props - The properties passed to the component.
- * @param {Array} props.data - The data to be rendered.
- * @param {string} props.searchQuery - The search query to filter the data.
- */
 export const FilteredData = ({ data, searchQuery }) => {
-  // State for keeping track of the currently highlighted item and group
   const [highlightedIndices, setHighlightedIndices] = useState({
     item: 0,
     group: 0,
   });
 
-  // Create a nested array of refs for each group in each item
-  const linksRef = data.map((item) => [
-    useRef(null),
-    ...item.groups.map(() => useRef(null)),
-  ]);
-  // Effect for setting the initial highlighted item and group
+  const [focusedElement, setFocusedElement] = useState(null);
+
   useEffect(() => {
     setHighlightedIndices({ item: data.length > 0 ? 0 : -1, group: 0 });
   }, [data]);
 
-  // Handler for keydown events
-  // const handleKeyDown = (event) => {
-  //   if (event.key === "ArrowDown") {
-  //     setHighlightedIndices((prevIndices) => {
-  //       let nextGroup = prevIndices.group;
-  //       let nextItem = prevIndices.item;
-  //       do {
-  //         if (nextGroup === 0 && prevIndices.group === 0) {
-  //           nextGroup = 1;
-  //         } else {
-  //           nextGroup++;
-  //           if (nextGroup > data[nextItem].groups.length) {
-  //             nextGroup = 0;
-  //             nextItem++;
-  //             if (nextItem >= data.length) {
-  //               nextItem = 0; // Loop back to the first item if it's the last one
-  //             }
-  //           }
-  //         }
-  //       } while (!linksRef[nextItem][nextGroup]?.current); // Skip over non-visible groups
-  //       return {
-  //         item: nextItem,
-  //         group: nextGroup,
-  //       };
-  //     });
-  //   } else if (event.key === "ArrowUp") {
-  //     setHighlightedIndices((prevIndices) => {
-  //       let nextGroup = prevIndices.group;
-  //       let nextItem = prevIndices.item;
-  //       do {
-  //         if (nextGroup === 0 && prevIndices.group === 0) {
-  //           nextItem--;
-  //           if (nextItem < 0) {
-  //             nextItem = data.length - 1; // Loop back to the last item if it's the first one
-  //           }
-  //           nextGroup = data[nextItem].groups.length;
-  //         } else {
-  //           nextGroup--;
-  //         }
-  //       } while (!linksRef[nextItem][nextGroup]?.current); // Skip over non-visible groups
-  //       return {
-  //         item: nextItem,
-  //         group: nextGroup,
-  //       };
-  //     });
-  //   } else if (event.key === "Enter") {
-  //     if (
-  //       highlightedIndices.item < linksRef.length &&
-  //       highlightedIndices.group < linksRef[highlightedIndices.item].length
-  //     ) {
-  //       const activeLink =
-  //         linksRef[highlightedIndices.item][highlightedIndices.group].current;
-  //       if (activeLink) {
-  //         activeLink.click();
-  //       }
-  //     }
-  //   }
-  // };
-
   const handleKeyDown = (event) => {
-    if (event.key === "ArrowDown") {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       setHighlightedIndices((prevIndices) => {
         let nextGroup = prevIndices.group;
         let nextItem = prevIndices.item;
-        do {
-          if (nextGroup === 0 && prevIndices.group === 0) {
-            nextGroup = 1;
-          } else {
+
+        if (event.key === "ArrowDown") {
+          if (nextGroup < data[nextItem].groups.length - 1) {
             nextGroup++;
-            if (nextGroup > data[nextItem].groups.length) {
-              nextGroup = 0;
-              nextItem++;
-              if (nextItem >= data.length) {
-                nextItem = 0; // Loop back to the first item if it's the last one
-              }
-            }
-          }
-        } while (!linksRef[nextItem][nextGroup]?.current); // Skip over non-visible groups
-        return {
-          item: nextItem,
-          group: nextGroup,
-        };
-      });
-    } else if (event.key === "ArrowUp") {
-      setHighlightedIndices((prevIndices) => {
-        let nextGroup = prevIndices.group;
-        let nextItem = prevIndices.item;
-        do {
-          if (nextGroup === 0 && prevIndices.group === 0) {
-            nextItem--;
-            if (nextItem < 0) {
-              nextItem = data.length - 1; // Loop back to the last item if it's the first one
-            }
-            nextGroup = data[nextItem].groups.length;
           } else {
-            nextGroup--;
-            if (nextGroup < 0) {
-              nextItem--;
-              if (nextItem < 0) {
-                nextItem = data.length - 1; // Loop back to the last item if it's the first one
-              }
-              nextGroup = data[nextItem].groups.length;
-            }
+            nextGroup = 0;
+            nextItem = nextItem < data.length - 1 ? nextItem + 1 : 0;
           }
-        } while (!linksRef[nextItem][nextGroup]?.current); // Skip over non-visible groups
+        } else if (event.key === "ArrowUp") {
+          if (nextGroup > 0) {
+            nextGroup--;
+          } else {
+            nextItem = nextItem > 0 ? nextItem - 1 : data.length - 1;
+            nextGroup = data[nextItem].groups.length - 1;
+          }
+        }
+
+        const activeItem = data[nextItem];
+        const activeElement = activeItem
+          ? nextGroup === 0
+            ? activeItem
+            : activeItem.groups[nextGroup - 1]
+          : null;
+        setFocusedElement(activeElement);
+
         return {
           item: nextItem,
           group: nextGroup,
         };
       });
-    } else if (event.key === "Enter") {
-      if (
-        highlightedIndices.item < linksRef.length &&
-        highlightedIndices.group < linksRef[highlightedIndices.item].length
-      ) {
-        const activeLink =
-          linksRef[highlightedIndices.item][highlightedIndices.group].current;
-        if (activeLink) {
-          activeLink.click();
-        }
+    } else if (event.key === "Enter" && focusedElement) {
+      if (focusedElement.url) {
+        window.location.href = focusedElement.url;
+      } else {
+        window.location.href = focusedElement.link;
       }
     }
   };
 
-  // Effect for adding and removing the keydown event listener
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => {
@@ -158,23 +64,6 @@ export const FilteredData = ({ data, searchQuery }) => {
     };
   }, [data, highlightedIndices]);
 
-  // Effect for focusing the active link
-  useEffect(() => {
-    let activeLink;
-    // Check if the ref exists before trying to access it
-    if (
-      highlightedIndices.item < linksRef.length &&
-      highlightedIndices.group < linksRef[highlightedIndices.item].length
-    ) {
-      activeLink =
-        linksRef[highlightedIndices.item][highlightedIndices.group].current;
-    }
-    if (activeLink) {
-      activeLink.focus();
-    }
-  }, [highlightedIndices, linksRef]);
-
-  // Render the data items and their groups
   return (
     <>
       {data.map((item, itemIndex) => {
@@ -184,11 +73,12 @@ export const FilteredData = ({ data, searchQuery }) => {
               <a
                 href={item.url}
                 target={"_blank"}
-                ref={(el) => (linksRef[itemIndex][0].current = el)}
                 tabIndex={0} // Make the item name focusable
                 onKeyDown={handleKeyDown} // Add the keydown event handler
                 className={
-                  "focus:bg-blue-300/50 focus:outline-none focus:text-stone-900"
+                  focusedElement && focusedElement.id === item.id
+                    ? "bg-blue-300/50 outline-none text-stone-900"
+                    : ""
                 }
               >
                 {item.name}
@@ -199,7 +89,8 @@ export const FilteredData = ({ data, searchQuery }) => {
         const lowerCaseName = item.name.toLowerCase();
         const lowerCaseQuery = searchQuery.toLowerCase();
         const startIndex = lowerCaseName.indexOf(lowerCaseQuery);
-        if (startIndex > 0) {
+        if (startIndex >= 0) {
+          // Changed condition to >= 0
           const endIndex = startIndex + searchQuery.length;
           const beforeMatch = item.name.slice(0, startIndex);
           const match = item.name.slice(startIndex, endIndex);
@@ -210,11 +101,12 @@ export const FilteredData = ({ data, searchQuery }) => {
                 <a
                   href={item.url}
                   target={"_blank"}
-                  ref={(el) => (linksRef[itemIndex][0].current = el)}
                   tabIndex={0} // Make the item name focusable
                   onKeyDown={handleKeyDown} // Add the keydown event handler
                   className={
-                    "focus:bg-blue-300/50 focus:outline-none focus:text-stone-900"
+                    focusedElement && focusedElement.id === item.id
+                      ? "bg-blue-300/50 outline-none text-stone-900"
+                      : ""
                   }
                 >
                   {beforeMatch}
@@ -245,17 +137,17 @@ export const FilteredData = ({ data, searchQuery }) => {
                   const beforeMatch = group.name.slice(0, startIndex);
                   const match = group.name.slice(startIndex, endIndex);
                   const afterMatch = group.name.slice(endIndex);
+
                   return (
                     <li key={group.id}>
                       <a
                         href={group.url}
                         target={"_blank"}
-                        ref={(el) =>
-                          (linksRef[itemIndex][groupIndex + 1].current = el)
-                        }
                         tabIndex={0}
                         className={
-                          "focus:bg-blue-300/50 focus:outline-none focus:text-stone-900 ml-4"
+                          focusedElement && focusedElement.id === group.id
+                            ? " bg-blue-300/50 outline-none text-stone-900 ml-4"
+                            : "ml-4"
                         }
                       >
                         {beforeMatch}

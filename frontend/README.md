@@ -1,8 +1,37 @@
-# React + Vite
+# Optimi Technical Assessment Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend for the Optimi Technical Assessment. It's a React application that interacts with the backend server.
 
-Currently, two official plugins are available:
+## Getting Started
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+
+### Prerequisites
+
+- Node.js
+- npm
+
+### Installing
+
+1. Clone the repository from the root directory
+2. Navigate to the frontend directory
+3. Install the dependencies with `npm install`
+
+## Running the Application
+
+To start the application, run `npm start`. The application will start on port 5173.
+
+To access the application, navigate to `http://localhost:5173` in your browser.
+
+## Components
+
+- `App`: The main component that renders all other components
+
+## Built With
+
+- [React](https://reactjs.org/) - The web framework used
+- [Vite](https://vitejs.dev/) - The build tool used
+
+## Author
+
+- **Anthony Kruger**

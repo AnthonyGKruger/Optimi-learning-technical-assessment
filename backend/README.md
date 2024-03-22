@@ -13,8 +13,8 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Installing
 
-1. Clone the repository
-2. Navigate to the project directory
+1. Clone the repository from the root directory
+2. Navigate to the backend directory
 3. Install the dependencies with `npm install`
 
 ## Running the server

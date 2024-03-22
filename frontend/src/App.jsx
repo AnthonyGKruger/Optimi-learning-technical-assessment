@@ -1,17 +1,19 @@
+/**
+ * Importing necessary modules and components
+ */
 import { useEffect, useState } from "react";
 import { Spinner } from "./components/ui/loaders/Spinner.jsx";
 import { MenuItems } from "./components/ui/nav/MenuItems.jsx";
+import { sha256 } from "js-sha256";
 
 /**
- * App Component
- * This function is the main component of the application.
- * It fetches data from a server and displays it in a navigation bar.
+ * Main App component
+ * This component fetches data from the server and displays it in a navigation bar.
  * It uses the useState hook to manage the data, loading, and error states.
  * It uses the useEffect hook to fetch the data when the component mounts.
  * If the data is loading, it displays a Spinner component.
  * If there is an error, it displays the error message.
  * If the data has loaded successfully, it displays the data in MenuItems components.
- * @returns {JSX.Element} The rendered App component
  */
 const App = () => {
   /**
@@ -35,7 +37,25 @@ const App = () => {
     (async () => {
       setLoading(true);
       try {
-        const response = await fetch("http://localhost:3000/projects");
+        /**
+         * Hashing the ACCESS_TOKEN_SECRET environment variable
+         * @type {string}
+         */
+        const token = sha256(
+          import.meta.env.VITE_ACCESS_TOKEN_SECRET.toString(),
+        );
+
+        /**
+         * Fetching data from the server
+         * @type {Response}
+         */
+        const response = await fetch("http://localhost:3000/projects", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -64,7 +84,9 @@ const App = () => {
       <nav className={"bg-[#4e70a0] h-12 flex items-center justify-center"}>
         {loading && <Spinner />}
         {!loading && error && (
-          <p className={"text-white"}>Error: {error.message}</p>
+          <p className={"text-white"}>
+            Whoops, looks like there was an error: {error.message}
+          </p>
         )}
         {!loading && !error && data && <MenuItems data={data} />}
       </nav>
@@ -72,4 +94,7 @@ const App = () => {
   );
 };
 
+/**
+ * Exporting the App component as the default export
+ */
 export default App;

@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { ProjectImage } from "./ProjectImage.jsx";
+import { Group } from "./Group.jsx";
+import { Item } from "./Item.jsx";
 
 /**
  * `FilteredData` is a React component that displays a list of data filtered by a search query.
@@ -97,7 +99,7 @@ export const FilteredData = ({ data, searchQuery }) => {
     }
     // If the Enter key is pressed and there is a focused element
     else if (event.key === "Enter" && focusedElement) {
-      // If the focused element has a url property, navigate to that url
+      // If the focused element has an url property, navigate to that url
       if (focusedElement.url) {
         window.location.href = focusedElement.url;
       }
@@ -118,63 +120,61 @@ export const FilteredData = ({ data, searchQuery }) => {
     };
   }, [data, highlightedIndices]);
 
-  console.log(data);
+  /**
+   * Checks for a match between the search query and the phrase.
+   * If a match is found, it returns an object with the text before, during, and after the match.
+   * If no match is found and the phrase is not a group, it returns the phrase's name.
+   *
+   * @param {Object} phrase - The phrase to check for a match.
+   * @param {string} searchQuery - The search query.
+   * @param {boolean} isGroup - Whether the phrase is a group.
+   *
+   * @returns {Object|string} The match result.
+   */
+  const checkForMatch = (phrase, searchQuery, isGroup) => {
+    const lowerCaseName = phrase.name.toLowerCase();
+    const lowerCaseQuery = searchQuery.toLowerCase();
+    const startIndex = lowerCaseName.indexOf(lowerCaseQuery);
+    if (startIndex >= 0) {
+      const endIndex = startIndex + searchQuery.length;
+      const beforeMatch = phrase.name.slice(0, startIndex);
+      const match = phrase.name.slice(startIndex, endIndex);
+      const afterMatch = phrase.name.slice(endIndex);
+      return {
+        beforeMatch,
+        match,
+        afterMatch,
+      };
+    }
+    if (!isGroup) {
+      return phrase.name;
+    }
+  };
+
   /**
    * Render the FilteredData component
    */
   return (
     <>
       {data.map((item) => {
-        let headingContent = (
-          <li key={item.id}>
-            <h2 className={"font-bold text-[#4e70a0] w-full"}>
-              <a
-                href={item.url}
-                target={"_blank"}
-                tabIndex={0}
-                onKeyDown={handleKeyDown}
-                className={
-                  focusedElement && focusedElement.id === item.id
-                    ? "block bg-blue-300/50 outline-none text-stone-900 w-full"
-                    : ""
-                }
-              >
-                {item.name}
-              </a>
-            </h2>
-          </li>
+        const itemPhrase = checkForMatch(item, searchQuery, false);
+        const headingContent = (
+          <Item
+            handleKeyDown={(event) =>
+              handleKeyDown(
+                event,
+                data,
+                setHighlightedIndices,
+                setFocusedElement,
+                focusedElement,
+              )
+            }
+            itemPhrase={itemPhrase}
+            item={item}
+            key={item.id}
+            focusedElement={focusedElement}
+          />
         );
-        const lowerCaseName = item.name.toLowerCase();
-        const lowerCaseQuery = searchQuery.toLowerCase();
-        const startIndex = lowerCaseName.indexOf(lowerCaseQuery);
-        console.log(startIndex, item.name, searchQuery);
-        if (startIndex >= 0) {
-          const endIndex = startIndex + searchQuery.length;
-          const beforeMatch = item.name.slice(0, startIndex);
-          const match = item.name.slice(startIndex, endIndex);
-          const afterMatch = item.name.slice(endIndex);
-          headingContent = (
-            <li key={item.id}>
-              <h2 className={"font-bold text-[#4e70a0] w-full"}>
-                <a
-                  href={item.url}
-                  target={"_blank"}
-                  tabIndex={0}
-                  onKeyDown={handleKeyDown}
-                  className={
-                    focusedElement && focusedElement.id === item.id
-                      ? "block bg-blue-300/50 outline-none text-stone-900 w-full"
-                      : ""
-                  }
-                >
-                  <span>{beforeMatch}</span>
-                  <span className={"bg-yellow-300"}>{match}</span>
-                  <span>{afterMatch}</span>
-                </a>
-              </h2>
-            </li>
-          );
-        }
 
         return (
           <div key={item.id} className={`grid grid-cols-3 `}>
@@ -185,40 +185,15 @@ export const FilteredData = ({ data, searchQuery }) => {
               <ol className={"list-inside"}>
                 {headingContent}
                 {item.groups.map((group) => {
-                  const lowerCaseName = group.name.toLowerCase();
-                  const lowerCaseQuery = searchQuery.toLowerCase();
-                  const startIndex = lowerCaseName.indexOf(lowerCaseQuery);
-                  if (startIndex === -1) {
-                    return <li key={group.id}>{group.name}</li>;
-                  }
-                  const endIndex = startIndex + searchQuery.length;
-                  const beforeMatch = group.name.slice(0, startIndex);
-                  const match = group.name.slice(startIndex, endIndex);
-                  const afterMatch = group.name.slice(endIndex);
-
+                  const groupPhrase = checkForMatch(group, searchQuery, true);
                   return (
-                    <li key={group.id}>
-                      <a
-                        href={group.url}
-                        target={"_blank"}
-                        tabIndex={0}
-                        className={
-                          focusedElement && focusedElement.id === group.id
-                            ? "block bg-blue-300/50 outline-none text-stone-900 pl-4 w-full"
-                            : "pl-4"
-                        }
-                      >
-                        {searchQuery === "" ? (
-                          group.name
-                        ) : (
-                          <>
-                            <span>{beforeMatch}</span>
-                            <span className={"bg-yellow-300"}>{match}</span>
-                            <span>{afterMatch}</span>
-                          </>
-                        )}
-                      </a>
-                    </li>
+                    <Group
+                      searchQuery={searchQuery}
+                      group={group}
+                      focusedElement={focusedElement}
+                      groupPhrase={groupPhrase}
+                      key={group.id}
+                    />
                   );
                 })}
               </ol>

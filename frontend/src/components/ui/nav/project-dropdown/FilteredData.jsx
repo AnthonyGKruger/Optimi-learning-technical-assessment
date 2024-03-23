@@ -160,15 +160,7 @@ export const FilteredData = ({ data, searchQuery }) => {
         const itemPhrase = checkForMatch(item, searchQuery, false);
         const headingContent = (
           <Item
-            handleKeyDown={(event) =>
-              handleKeyDown(
-                event,
-                data,
-                setHighlightedIndices,
-                setFocusedElement,
-                focusedElement,
-              )
-            }
+            handleKeyDown={handleKeyDown}
             itemPhrase={itemPhrase}
             item={item}
             key={item.id}

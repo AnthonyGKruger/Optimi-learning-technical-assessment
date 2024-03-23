@@ -23,10 +23,6 @@ To start the application, run `npm start`. The application will start on port 51
 
 To access the application, navigate to `http://localhost:5173` in your browser.
 
-## Components
-
-- `App`: The main component that renders all other components
-
 ## Built With
 
 - [React](https://reactjs.org/) - The web framework used

@@ -21,6 +21,8 @@ These instructions will get you a copy of the project up and running on your loc
 
 To start the server, run `npm start`. The server will start on port 3000.
 
+The server will be accessible at `http://localhost:3000`
+
 ## Endpoints
 
 - `GET /projects`: Returns a list of projects
